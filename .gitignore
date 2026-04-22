@@ -1,0 +1,52 @@
+```
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+target/
+
+# Environment variables
+.env
+.env.local
+.env.*
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# Temporary files
+*.tmp
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Prisma
+prisma/migrations/
+
+# TypeScript
+*.tsbuildinfo
+```
