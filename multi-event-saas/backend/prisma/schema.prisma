@@ -1,0 +1,830 @@
+// EventFlow Pro - Database Schema
+// PostgreSQL 16 + Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["multiSchema", "fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["public", "analytics"]
+}
+
+// ============================================
+// CORE TENANCY & ORGANIZATION
+// ============================================
+
+model Organization {
+  id                String   @id @default(uuid())
+  name              String   @db.VarChar(100)
+  subdomain         String   @unique @db.VarChar(50)
+  slug              String   @unique @db.VarChar(50)
+  logoUrl           String?  @db.Text
+  brandingConfig    Json?    // Custom colors, fonts, etc.
+  stripeCustomerId  String?  @unique @db.VarChar(255)
+  tier              Tier     @default(FREE)
+  subscriptionStatus String? @db.VarChar(50)
+  subscriptionEndsAt DateTime?
+  maxEvents         Int      @default(3)
+  maxGuestsPerEvent Int      @default(100)
+  features          Json?    // Enabled features by tier
+  settings          Json?    // Org-level settings
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  events      Event[]
+  members     OrganizationMember[]
+  invitations OrganizationInvitation[]
+
+  // Indexes
+  @@index([subdomain])
+  @@index([tier])
+  @@index([createdAt])
+}
+
+enum Tier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+model OrganizationMember {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String
+  role           MemberRole @default(MEMBER)
+  permissions    Json?      // Custom permissions
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Unique constraint
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+model OrganizationInvitation {
+  id             String   @id @default(uuid())
+  organizationId String
+  email          String
+  role           MemberRole
+  token          String   @unique
+  status         InvitationStatus @default(PENDING)
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([organizationId])
+  @@index([token])
+  @@index([email])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+// ============================================
+// USER MANAGEMENT (Clerk Integration)
+// ============================================
+
+model User {
+  id            String   @id @default(uuid())
+  clerkId       String   @unique @db.VarChar(255)
+  email         String   @unique @db.VarChar(255)
+  firstName     String?  @db.VarChar(100)
+  lastName      String?  @db.VarChar(100)
+  imageUrl      String?  @db.Text
+  phoneNumber   String?  @db.VarChar(50)
+  timezone      String   @default("UTC") @db.VarChar(50)
+  locale        String   @default("en") @db.VarChar(10)
+  lastLoginAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  memberships OrganizationMember[]
+  createdEvents Event[]
+  guests        Guest[]
+  checkins      CheckIn[]
+  photos        Photo[]
+  chatMessages  ChatMessage[]
+
+  // Indexes
+  @@index([clerkId])
+  @@index([email])
+}
+
+// ============================================
+// EVENT MANAGEMENT
+// ============================================
+
+model Event {
+  id              String      @id @default(uuid())
+  organizationId  String
+  creatorId       String
+  type            EventType
+  name            String      @db.VarChar(200)
+  slug            String      @db.VarChar(200)
+  description     String?     @db.Text
+  status          EventStatus @default(DRAFT)
+  
+  // Date & Time
+  startDate       DateTime
+  endDate         DateTime?
+  timezone        String      @default("UTC") @db.VarChar(50)
+  
+  // Location
+  locationType    LocationType
+  venueName       String?     @db.VarChar(200)
+  venueAddress    String?     @db.VarChar(500)
+  city            String?     @db.VarChar(100)
+  country         String?     @db.VarChar(100)
+  virtualUrl      String?     @db.Text
+  meetingPassword String?     @db.VarChar(100)
+  
+  // Capacity & Registration
+  capacity        Int?
+  registrationOpen Boolean    @default(true)
+  registrationStart DateTime?
+  registrationEnd   DateTime?
+  
+  // Theming (Dynamic - NO HARDCODING)
+  themeConfig     Json?       // Colors, fonts, animations, layouts
+  customBranding  Json?       // Override org branding
+  
+  // Custom Fields
+  customFields    Json?       // Event-specific form fields
+  
+  // Settings
+  allowPlusOnes   Boolean     @default(false)
+  maxPlusOnes     Int         @default(0)
+  requireApproval Boolean     @default(false)
+  enableWaitlist  Boolean     @default(true)
+  enableChat      Boolean     @default(true)
+  enablePhotos    Boolean     @default(true)
+  enableCheckin   Boolean     @default(true)
+  qrCodeEnabled   Boolean     @default(true)
+  
+  // Analytics
+  viewCount       Int         @default(0)
+  rsvpCount       Int         @default(0)
+  checkedInCount  Int         @default(0)
+  
+  // SEO & Sharing
+  metaTitle       String?     @db.VarChar(200)
+  metaDescription String?     @db.Text
+  ogImageUrl      String?     @db.Text
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  publishedAt     DateTime?
+  completedAt     DateTime?
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creator      User         @relation(fields: [creatorId], references: [id])
+  guests       Guest[]
+  rsvps        Rsvp[]
+  checkins     CheckIn[]
+  photos       Photo[]
+  chats        Chat[]
+  waitlist     Waitlist[]
+  reminders    Reminder[]
+  analytics    EventAnalytics?
+
+  // Unique constraints & Indexes
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([type])
+  @@index([status])
+  @@index([startDate])
+  @@index([slug])
+  @@index([city, country])
+  
+  // Full-text search
+  @@fulltext([name, description, venueName])
+}
+
+enum EventType {
+  WEDDING
+  BIRTHDAY
+  CONFERENCE
+  MEETUP
+  COMMEMORATION
+  CUSTOM
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  COMPLETED
+  CANCELLED
+}
+
+enum LocationType {
+  PHYSICAL
+  VIRTUAL
+  HYBRID
+}
+
+// ============================================
+// GUEST MANAGEMENT
+// ============================================
+
+model Guest {
+  id                 String   @id @default(uuid())
+  eventId            String
+  name               String   @db.VarChar(200)
+  email              String?  @db.VarChar(255)
+  phone              String?  @db.VarChar(50)
+  
+  // Role & Seating
+  role               GuestRole @default(ATTENDEE)
+  tableNumber        Int?
+  seatNumber         Int?
+  
+  // Plus Ones
+  plusOnesAllowed    Int      @default(0)
+  plusOnesCount      Int      @default(0)
+  plusOnesNames      Json?    // Array of names
+  
+  // Preferences
+  dietaryPrefs       String[] @default([])
+  accessibilityNeeds String?  @db.Text
+  
+  // QR Code
+  qrCode             String   @unique @db.VarChar(255)
+  qrCodeScanned      Boolean  @default(false)
+  qrCodeScannedAt    DateTime?
+  
+  // Custom Data
+  customFields       Json?
+  notes              String?  @db.Text
+  
+  // Status
+  isActive           Boolean  @default(true)
+  approvalStatus     ApprovalStatus @default(PENDING)
+  approvedBy         String?
+  approvedAt         DateTime?
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relations
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  rsvp        Rsvp?
+  checkins    CheckIn[]
+  photos      Photo[]
+  chatMessages ChatMessage[]
+  createdBy   User?    @relation(fields: [approvedBy], references: [id])
+
+  // Indexes
+  @@index([eventId])
+  @@index([email])
+  @@index([qrCode])
+  @@index([role])
+  @@index([tableNumber])
+  @@index([approvalStatus])
+}
+
+enum GuestRole {
+  ATTENDEE
+  VIP
+  SPEAKER
+  STAFF
+  ORGANIZER
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+// ============================================
+// RSVP MANAGEMENT
+// ============================================
+
+model Rsvp {
+  id             String      @id @default(uuid())
+  guestId        String      @unique
+  eventId        String
+  status         RsvpStatus  @default(PENDING)
+  
+  // Attendance Details
+  plusOnesCount  Int         @default(0)
+  notes          String?     @db.Text
+  customAnswers  Json?
+  
+  // Tracking
+  respondedAt    DateTime    @default(now())
+  reminderSent   Boolean     @default(false)
+  reminderSentAt DateTime?
+  
+  // Check-in eligibility
+  canCheckIn     Boolean     @default(false)
+  
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  // Relations
+  guest   Guest   @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([guestId])
+  @@index([eventId])
+  @@index([status])
+  @@index([eventId, status])
+}
+
+enum RsvpStatus {
+  PENDING
+  ATTENDING
+  DECLINED
+  WAITLISTED
+}
+
+// ============================================
+// WAITLIST MANAGEMENT
+// ============================================
+
+model Waitlist {
+  id         String   @id @default(uuid())
+  eventId    String
+  email      String   @db.VarChar(255)
+  name       String?  @db.VarChar(200)
+  phone      String?  @db.VarChar(50)
+  position   Int      @default(0)
+  priority   Int      @default(0) // Higher = more priority
+  notified   Boolean  @default(false)
+  notifiedAt DateTime?
+  expiresAt  DateTime?
+  status     WaitlistStatus @default(ACTIVE)
+  
+  customFields Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([eventId])
+  @@index([email])
+  @@index([position])
+  @@unique([eventId, email])
+}
+
+enum WaitlistStatus {
+  ACTIVE
+  NOTIFIED
+  CONVERTED
+  EXPIRED
+  REMOVED
+}
+
+// ============================================
+// CHECK-IN SYSTEM
+// ============================================
+
+model CheckIn {
+  id          String   @id @default(uuid())
+  guestId     String
+  eventId     String
+  timestamp   DateTime @default(now())
+  deviceId    String?  @db.VarChar(255)
+  deviceType  String?  @db.VarChar(50)
+  locationLat Float?
+  locationLng Float?
+  notes       String?  @db.Text
+  isValid     Boolean  @default(true)
+  invalidReason String? @db.Text
+
+  // Relations
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([guestId])
+  @@index([eventId])
+  @@index([timestamp])
+  @@index([deviceId])
+}
+
+// ============================================
+// PHOTO SHARING
+// ============================================
+
+model Photo {
+  id           String   @id @default(uuid())
+  eventId      String
+  guestId      String?
+  cloudinaryUrl String  @db.Text
+  thumbnailUrl String? @db.Text
+  publicId     String   @db.VarChar(255)
+  width        Int?
+  height       Int?
+  size         Int?     // File size in bytes
+  format       String?  @db.VarChar(20)
+  
+  // Moderation
+  isApproved   Boolean  @default(false)
+  approvedBy   String?
+  approvedAt   DateTime?
+  isRejected   Boolean  @default(false)
+  rejectionReason String?
+  
+  // Metadata
+  tags         String[] @default([])
+  captions     String?  @db.Text
+  takenAt      DateTime?
+  
+  // Engagement
+  likeCount    Int      @default(0)
+  viewCount    Int      @default(0)
+  
+  createdAt    DateTime @default(now())
+
+  // Relations
+  event Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest Guest?   @relation(fields: [guestId], references: [id], onDelete: SetNull)
+
+  // Indexes
+  @@index([eventId])
+  @@index([guestId])
+  @@index([isApproved])
+  @@index([createdAt])
+}
+
+// ============================================
+// CHAT & MESSAGING
+// ============================================
+
+model Chat {
+  id          String   @id @default(uuid())
+  eventId     String
+  roomType    String   @default("general") @db.VarChar(50)
+  roomName    String?  @db.VarChar(100)
+  isPrivate   Boolean  @default(false)
+  memberIds   String[] // Array of user/guest IDs who can access
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  event    Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  // Indexes
+  @@index([eventId])
+  @@index([roomType])
+  @@unique([eventId, roomType])
+}
+
+model ChatMessage {
+  id          String   @id @default(uuid())
+  chatId      String
+  senderType  MessageType @default(GUEST)
+  senderId    String?  // User ID or Guest ID
+  content     String   @db.Text
+  messageType MessageType @default(TEXT)
+  attachments Json?    // Array of {url, name, size}
+  
+  // Threading
+  parentId    String?
+  threadCount Int      @default(0)
+  
+  // Reactions
+  reactions   Json?    // {emoji: count}
+  
+  // Moderation
+  isEdited    Boolean  @default(false)
+  editedAt    DateTime?
+  isDeleted   Boolean  @default(false)
+  deletedAt   DateTime?
+  
+  createdAt   DateTime @default(now())
+
+  // Relations
+  chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  parent ChatMessage? @relation(fields: [parentId], references: [id])
+  replies  ChatMessage[] @relation("MessageReplies")
+
+  // Indexes
+  @@index([chatId])
+  @@index([senderId])
+  @@index([parentId])
+  @@index([createdAt])
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
+}
+
+// ============================================
+// REMINDERS & NOTIFICATIONS
+// ============================================
+
+model Reminder {
+  id          String   @id @default(uuid())
+  eventId     String
+  type        ReminderType
+  channel     ReminderChannel
+  templateId  String?
+  
+  // Scheduling
+  sendAt      DateTime
+  timezone    String   @default("UTC")
+  isSent      Boolean  @default(false)
+  sentAt      DateTime?
+  
+  // Targeting
+  targetAudience Json? // {status: ["pending"], role: ["vip"]}
+  
+  // Content
+  subject     String?  @db.VarChar(500)
+  body        String?  @db.Text
+  variables   Json?    // Template variables
+  
+  // Stats
+  totalCount  Int      @default(0)
+  sentCount   Int      @default(0)
+  openedCount Int      @default(0)
+  clickedCount Int     @default(0)
+  failedCount Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+
+  // Relations
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([eventId])
+  @@index([sendAt])
+  @@index([isSent])
+}
+
+enum ReminderType {
+  RSVP_REMINDER
+  EVENT_START
+  FOLLOW_UP
+  CUSTOM
+}
+
+enum ReminderChannel {
+  EMAIL
+  SMS
+  WHATSAPP
+  PUSH
+}
+
+// ============================================
+// ANALYTICS
+// ============================================
+
+model EventAnalytics {
+  id              String   @id @default(uuid())
+  eventId         String   @unique
+  
+  // RSVP Metrics
+  totalInvited    Int      @default(0)
+  totalRsvps      Int      @default(0)
+  attendingCount  Int      @default(0)
+  declinedCount   Int       @default(0)
+  pendingCount    Int      @default(0)
+  waitlistedCount Int      @default(0)
+  rsvpRate        Float    @default(0)
+  
+  // Check-in Metrics
+  checkedInCount  Int      @default(0)
+  noShowCount     Int      @default(0)
+  checkInRate     Float    @default(0)
+  
+  // Engagement Metrics
+  pageViews       Int      @default(0)
+  uniqueVisitors  Int      @default(0)
+  avgTimeOnPage   Float    @default(0)
+  photoUploads    Int      @default(0)
+  chatMessages    Int      @default(0)
+  
+  // Traffic Sources
+  trafficSources  Json?    // {direct: 0, social: 0, email: 0, etc.}
+  
+  // Device Breakdown
+  deviceStats     Json?    // {mobile: 0, desktop: 0, tablet: 0}
+  
+  // Geographic
+  geoStats        Json?    // {country: count}
+  
+  // Hourly Heatmap (for check-ins)
+  hourlyHeatmap   Json?    // {hour: count}
+  
+  // Plus Ones
+  totalPlusOnes   Int      @default(0)
+  
+  lastUpdated     DateTime @default(now())
+
+  // Relations
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([eventId])
+}
+
+// ============================================
+// PAYMENTS & SUBSCRIPTIONS
+// ============================================
+
+model Subscription {
+  id               String   @id @default(uuid())
+  organizationId   String   @unique
+  stripeSubscriptionId String? @unique @db.VarChar(255)
+  stripeCustomerId String
+  plan             Tier
+  status           SubscriptionStatus @default(INACTIVE)
+  
+  // Billing
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean  @default(false)
+  canceledAt         DateTime?
+  cancellationReason String?  @db.Text
+  
+  // Usage Tracking
+  eventsCreated      Int      @default(0)
+  totalGuests        Int      @default(0)
+  storageUsedBytes   BigInt   @default(0)
+  
+  // Add-ons
+  addOns             Json?    // {sms_credits: 100, extra_events: 5}
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([organizationId])
+  @@index([stripeSubscriptionId])
+  @@index([status])
+}
+
+enum SubscriptionStatus {
+  INACTIVE
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+}
+
+model Payment {
+  id               String   @id @default(uuid())
+  organizationId   String
+  stripePaymentId  String   @unique @db.VarChar(255)
+  amount           Int      // In cents
+  currency         String   @default("usd") @db.VarChar(3)
+  status           PaymentStatus
+  type             PaymentType
+  description      String?  @db.VarChar(500)
+  metadata         Json?
+  
+  createdAt        DateTime @default(now())
+  paidAt           DateTime?
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([organizationId])
+  @@index([stripePaymentId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentType {
+  SUBSCRIPTION
+  ONE_TIME
+  ADD_ON
+}
+
+// ============================================
+// API KEYS & INTEGRATIONS
+// ============================================
+
+model ApiKey {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String   @db.VarChar(100)
+  keyHash        String   @unique @db.VarChar(255)
+  prefix         String   @db.VarChar(10) // For display
+  permissions    Json?
+  lastUsedAt     DateTime?
+  expiresAt      DateTime?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([organizationId])
+  @@index([keyHash])
+}
+
+// ============================================
+// AUDIT LOG
+// ============================================
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  organizationId String?
+  userId         String?
+  action         String   @db.VarChar(100)
+  entityType     String   @db.VarChar(50)
+  entityId       String?
+  changes        Json?    // {before, after}
+  ipAddress      String?  @db.VarChar(45)
+  userAgent      String?  @db.Text
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  // Indexes
+  @@index([organizationId])
+  @@index([userId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// ============================================
+// THEME TEMPLATES (Dynamic Theming System)
+// ============================================
+
+model ThemeTemplate {
+  id          String   @id @default(uuid())
+  name        String   @unique @db.VarChar(100)
+  eventType   EventType
+  isDefault   Boolean  @default(false)
+  
+  // Theme Configuration (JSON for flexibility)
+  colors      Json     // {primary, secondary, accent, background, text}
+  fonts       Json     // {heading, body}
+  animations  Json?    // Animation configurations
+  layouts     Json?    // Layout configurations
+  components  Json?    // Component-specific styles
+  
+  // Preview
+  previewUrl  String?  @db.Text
+  
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Indexes
+  @@index([eventType])
+  @@index([isDefault])
+}
+
+// ============================================
+// MATERIALIZED VIEWS (via Prisma migrations)
+// ============================================
+
+// Note: Materialized views are created via raw SQL migrations
+// Example views to create:
+// 1. rsvp_rates_by_event_type
+// 2. attendance_heatmaps_hourly
+// 3. guest_engagement_scores
+// 4. organizer_performance_metrics

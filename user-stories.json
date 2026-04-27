@@ -1,0 +1,452 @@
+[
+  {
+    "id": "US-001",
+    "title": "Organization Registration & Onboarding",
+    "as_a": "Event Organizer",
+    "i_want_to": "Create an organization account and complete onboarding",
+    "so_that": "I can start managing events under my organization",
+    "acceptance_criteria": [
+      "User can sign up with email/password or social login (Google, Facebook)",
+      "Organization name and subdomain are validated for uniqueness",
+      "Welcome email is sent with getting started guide",
+      "Default Free tier is assigned automatically",
+      "Onboarding checklist shows next steps"
+    ],
+    "priority": "P0",
+    "effort": "M",
+    "event_types": ["all"],
+    "dependencies": []
+  },
+  {
+    "id": "US-002",
+    "title": "Create New Event",
+    "as_a": "Event Organizer",
+    "i_want_to": "Create a new event by selecting type and filling details",
+    "so_that": "I can start planning and inviting guests",
+    "acceptance_criteria": [
+      "User can select from 6 event types (Wedding, Birthday, Conference, Meetup, Commemoration, Custom)",
+      "Event form includes: name, date, time, timezone, venue, description",
+      "Theme is automatically suggested based on event type",
+      "Event can be saved as draft or published immediately",
+      "Unique event URL is generated upon creation"
+    ],
+    "priority": "P0",
+    "effort": "M",
+    "event_types": ["all"],
+    "dependencies": ["US-001"]
+  },
+  {
+    "id": "US-003",
+    "title": "Dynamic Theme Application",
+    "as_a": "Event Organizer",
+    "i_want_to": "Apply and customize themes for my event",
+    "so_that": "My event has a cohesive visual identity",
+    "acceptance_criteria": [
+      "Themes load dynamically based on event type selection",
+      "User can preview theme before applying",
+      "Custom colors, fonts, and logos can be uploaded",
+      "Theme changes reflect in real-time across web and mobile",
+      "Fallback to default theme if custom theme fails to load"
+    ],
+    "priority": "P0",
+    "effort": "L",
+    "event_types": ["all"],
+    "dependencies": ["US-002"]
+  },
+  {
+    "id": "US-004",
+    "title": "Bulk Guest Import",
+    "as_a": "Event Organizer",
+    "i_want_to": "Import guests from CSV, Excel, or Google Contacts",
+    "so_that": "I can quickly build my guest list without manual entry",
+    "acceptance_criteria": [
+      "CSV/Excel template is provided for download",
+      "File upload supports up to 10,000 guests in single import",
+      "Duplicate detection warns about existing guests",
+      "Import preview shows validation errors before confirmation",
+      "Progress bar displays import status for large files"
+    ],
+    "priority": "P0",
+    "effort": "L",
+    "event_types": ["all"],
+    "dependencies": ["US-002"]
+  },
+  {
+    "id": "US-005",
+    "title": "Manual Guest Management",
+    "as_a": "Event Organizer",
+    "i_want_to": "Add, edit, and delete individual guests",
+    "so_that": "I can manage my guest list with precision",
+    "acceptance_criteria": [
+      "Add guest form includes: name, email, phone, role, table number, dietary preferences",
+      "Guest list is searchable and filterable by role, RSVP status, table",
+      "Guests can be assigned to roles (VIP, Regular, Staff, Speaker, etc.)",
+      "Plus-ones can be added per guest",
+      "Delete action requires confirmation and archives guest data"
+    ],
+    "priority": "P0",
+    "effort": "M",
+    "event_types": ["all"],
+    "dependencies": ["US-002"]
+  },
+  {
+    "id": "US-006",
+    "title": "QR Code Generation for Guests",
+    "as_a": "Event Organizer",
+    "i_want_to": "Generate unique QR codes for each guest",
+    "so_that": "Guests can be checked in quickly at the event",
+    "acceptance_criteria": [
+      "QR code is generated automatically when guest is added",
+      "QR codes contain encrypted guest ID and event ID",
+      "Batch download of all QR codes as PDF is available",
+      "Individual QR codes can be emailed to guests",
+      "QR codes are printable in multiple sizes"
+    ],
+    "priority": "P0",
+    "effort": "M",
+    "event_types": ["all"],
+    "dependencies": ["US-005"]
+  },
+  {
+    "id": "US-007",
+    "title": "Send Event Invitations",
+    "as_a": "Event Organizer",
+    "i_want_to": "Send invitations via email, SMS, or WhatsApp",
+    "so_that": "Guests receive event details and can RSVP",
+    "acceptance_criteria": [
+      "Invitation templates are provided per event type",
+      "Custom message can be added to invitations",
+      "Recipients can be selected individually or by group",
+      "Invite includes event details, QR code, and RSVP link",
+      "Delivery status is tracked (sent, delivered, opened)"
+    ],
+    "priority": "P0",
+    "effort": "L",
+    "event_types": ["all"],
+    "dependencies": ["US-005", "US-006"]
+  },
+  {
+    "id": "US-008",
+    "title": "Guest RSVP Submission",
+    "as_a": "Event Guest",
+    "i_want_to": "Submit my RSVP response online",
+    "so_that": "The organizer knows if I'm attending",
+    "acceptance_criteria": [
+      "RSVP form is accessible via unique link or QR code",
+      "Form includes: attendance status, plus-ones, dietary preferences, notes",
+      "Form is mobile-responsive and loads in < 2 seconds",
+      "Confirmation page shows after submission",
+      "Confirmation email is sent to guest"
+    ],
+    "priority": "P0",
+    "effort": "M",
+    "event_types": ["all"],
+    "dependencies": ["US-007"]
+  },
+  {
+    "id": "US-009",
+    "title": "RSVP Tracking Dashboard",
+    "as_a": "Event Organizer",
+    "i_want_to": "View real-time RSVP responses",
+    "so_that": "I can track attendance and plan accordingly",
+    "acceptance_criteria": [
+      "Dashboard shows: total invited, responded, attending, declining, pending",
+      "RSVP rate percentage is calculated and displayed",
+      "Responses can be filtered by date, role, table",
+      "Export RSVP data to CSV is available",
+      "Real-time updates when new responses arrive"
+    ],
+    "priority": "P0",
+    "effort": "M",
+    "event_types": ["all"],
+    "dependencies": ["US-008"]
+  },
+  {
+    "id": "US-010",
+    "title": "Automated RSVP Reminders",
+    "as_a": "Event Organizer",
+    "i_want_to": "Send automated reminders to non-responders",
+    "so_that": "I can increase RSVP completion rates",
+    "acceptance_criteria": [
+      "Reminder schedule can be configured (e.g., 7 days before event)",
+      "Reminders can be sent via email, SMS, or WhatsApp",
+      "Non-responders are automatically identified",
+      "Reminder templates are customizable",
+      "Reminder history is logged"
+    ],
+    "priority": "P1",
+    "effort": "L",
+    "event_types": ["all"],
+    "dependencies": ["US-009"]
+  },
+  {
+    "id": "US-011",
+    "title": "Waitlist Management",
+    "as_a": "Event Organizer",
+    "i_want_to": "Manage a waitlist for capacity-limited events",
+    "so_that": "I can fill spots when guests cancel",
+    "acceptance_criteria": [
+      "Waitlist can be enabled with maximum capacity setting",
+      "Guests can join waitlist when event is full",
+      "Automatic promotion when spot becomes available",
+      "Promoted guest receives notification with deadline to confirm",
+      "Waitlist position is visible to waitlisted guests"
+    ],
+    "priority": "P1",
+    "effort": "L",
+    "event_types": ["Conference", "Meetup", "Birthday"],
+    "dependencies": ["US-008"]
+  },
+  {
+    "id": "US-012",
+    "title": "Mobile QR Check-in",
+    "as_a": "Event Staff",
+    "i_want_to": "Scan guest QR codes using mobile app",
+    "so_that": "Guests can be checked in quickly",
+    "acceptance_criteria": [
+      "Camera scanner activates within 1 second",
+      "Valid QR codes show guest details and check-in confirmation",
+      "Invalid/expired QR codes show error message",
+      "Offline mode caches scans and syncs when online",
+      "Check-in timestamp and device ID are recorded"
+    ],
+    "priority": "P0",
+    "effort": "L",
+    "event_types": ["all"],
+    "dependencies": ["US-006"]
+  },
+  {
+    "id": "US-013",
+    "title": "Check-in Analytics",
+    "as_a": "Event Organizer",
+    "i_want_to": "View real-time check-in statistics",
+    "so_that": "I can monitor event attendance flow",
+    "acceptance_criteria": [
+      "Dashboard shows: total checked in, remaining, no-shows",
+      "Check-in rate per hour is graphed",
+      "Heatmap shows peak check-in times",
+      "Average check-in time per guest is calculated",
+      "Data exports to CSV/PDF"
+    ],
+    "priority": "P1",
+    "effort": "M",
+    "event_types": ["all"],
+    "dependencies": ["US-012"]
+  },
+  {
+    "id": "US-014",
+    "title": "Event Chat Rooms",
+    "as_a": "Event Guest",
+    "i_want_to": "Participate in event chat rooms",
+    "so_that": "I can connect with other attendees",
+    "acceptance_criteria": [
+      "Global chat room is available to all guests",
+      "Table-based chat rooms auto-assign based on seating",
+      "Private messaging between guests is supported",
+      "Messages support text, images, and emojis",
+      "Chat history persists for event duration"
+    ],
+    "priority": "P1",
+    "effort": "L",
+    "event_types": ["Conference", "Meetup", "Wedding", "Birthday"],
+    "dependencies": ["US-008"]
+  },
+  {
+    "id": "US-015",
+    "title": "Photo Gallery Upload",
+    "as_a": "Event Guest",
+    "i_want_to": "Upload photos to the event gallery",
+    "so_that": "I can share memories with other guests",
+    "acceptance_criteria": [
+      "Photos can be uploaded from mobile or web",
+      "Multiple photos can be selected at once",
+      "Upload progress is shown with estimated time",
+      "Photos are compressed and optimized for web",
+      "Guest can add captions to photos"
+    ],
+    "priority": "P1",
+    "effort": "M",
+    "event_types": ["all"],
+    "dependencies": ["US-008"]
+  },
+  {
+    "id": "US-016",
+    "title": "Photo Moderation",
+    "as_a": "Event Organizer",
+    "i_want_to": "Review and approve photos before publishing",
+    "so_that": "Inappropriate content is filtered out",
+    "acceptance_criteria": [
+      "Pending photos queue shows unapproved uploads",
+      "Organizer can approve or reject with reason",
+      "AI auto-tags people and objects in photos",
+      "Approved photos appear in public gallery",
+      "Rejected photos are archived and not visible"
+    ],
+    "priority": "P1",
+    "effort": "L",
+    "event_types": ["all"],
+    "dependencies": ["US-015"]
+  },
+  {
+    "id": "US-017",
+    "title": "Ticket Sales & Payment",
+    "as_a": "Event Organizer",
+    "i_want_to": "Sell tickets and collect payments",
+    "so_that": "I can monetize my event",
+    "acceptance_criteria": [
+      "Ticket tiers can be created (General, VIP, Early Bird)",
+      "Prices are set per tier with currency support",
+      "Stripe integration processes payments securely",
+      "Payment confirmation email is sent to buyer",
+      "Refunds can be issued partially or fully"
+    ],
+    "priority": "P0",
+    "effort": "L",
+    "event_types": ["Conference", "Meetup", "Birthday"],
+    "dependencies": ["US-002"]
+  },
+  {
+    "id": "US-018",
+    "title": "Subscription Tier Upgrade",
+    "as_a": "Event Organizer",
+    "i_want_to": "Upgrade my organization subscription tier",
+    "so_that": "I can access more features and higher limits",
+    "acceptance_criteria": [
+      "Pricing page shows all tiers and features",
+      "Upgrade is processed via Stripe Checkout",
+      "New features unlock immediately after payment",
+      "Prorated billing is applied for mid-cycle upgrades",
+      "Invoice is emailed to organization admin"
+    ],
+    "priority": "P0",
+    "effort": "M",
+    "event_types": ["all"],
+    "dependencies": ["US-001"]
+  },
+  {
+    "id": "US-019",
+    "title": "Analytics Dashboard Overview",
+    "as_a": "Event Organizer",
+    "i_want_to": "View comprehensive event analytics",
+    "so_that": "I can measure event success and ROI",
+    "acceptance_criteria": [
+      "Dashboard shows: RSVP rate, check-in rate, engagement score",
+      "Guest demographics breakdown (role, location, response time)",
+      "Revenue vs. costs summary",
+      "Timeline view of key metrics over event lifecycle",
+      "Comparative analytics across multiple events"
+    ],
+    "priority": "P1",
+    "effort": "L",
+    "event_types": ["all"],
+    "dependencies": ["US-009", "US-013"]
+  },
+  {
+    "id": "US-020",
+    "title": "Multi-Language Support",
+    "as_a": "Event Guest",
+    "i_want_to": "View event content in my preferred language",
+    "so_that": "I can understand event details easily",
+    "acceptance_criteria": [
+      "Language selector is available on all guest-facing pages",
+      "Supported languages: English, Spanish, French, German, Chinese, Arabic",
+      "RSVP forms, invitations, and notifications translate automatically",
+      "Organizer can provide custom translations for event-specific content",
+      "Browser language is detected and applied by default"
+    ],
+    "priority": "P1",
+    "effort": "L",
+    "event_types": ["all"],
+    "dependencies": ["US-002"]
+  },
+  {
+    "id": "US-021",
+    "title": "Seating Chart Designer",
+    "as_a": "Event Organizer",
+    "i_want_to": "Create and manage seating arrangements",
+    "so_that": "Guests know where to sit at the event",
+    "acceptance_criteria": [
+      "Visual drag-and-drop table designer",
+      "Tables can be named and sized",
+      "Guests can be assigned to tables individually or in bulk",
+      "Seating chart can be printed or shared digitally",
+      "Conflicts (e.g., dietary needs) are highlighted"
+    ],
+    "priority": "P2",
+    "effort": "XL",
+    "event_types": ["Wedding", "Conference", "Commemoration"],
+    "dependencies": ["US-005"]
+  },
+  {
+    "id": "US-022",
+    "title": "Push Notifications",
+    "as_a": "Event Guest",
+    "i_want_to": "Receive push notifications about event updates",
+    "so_that": "I stay informed about important changes",
+    "acceptance_criteria": [
+      "Mobile app requests notification permission on first launch",
+      "Notifications for: event reminders, schedule changes, announcements",
+      "Notification preferences can be customized per guest",
+      "Notifications work in background and when app is closed",
+      "Notification history is accessible in-app"
+    ],
+    "priority": "P1",
+    "effort": "M",
+    "event_types": ["all"],
+    "dependencies": ["US-008"]
+  },
+  {
+    "id": "US-023",
+    "title": "Event Announcement Broadcasting",
+    "as_a": "Event Organizer",
+    "i_want_to": "Send announcements to all guests",
+    "so_that": "Everyone receives important updates",
+    "acceptance_criteria": [
+      "Announcement composer supports text, images, and links",
+      "Broadcast reaches all guests via push, email, and in-app",
+      "Delivery status is tracked per channel",
+      "Urgent announcements bypass quiet hours",
+      "Announcement archive is maintained"
+    ],
+    "priority": "P1",
+    "effort": "M",
+    "event_types": ["all"],
+    "dependencies": ["US-007"]
+  },
+  {
+    "id": "US-024",
+    "title": "Team Collaboration & Roles",
+    "as_a": "Event Organizer",
+    "i_want_to": "Invite team members with specific permissions",
+    "so_that": "We can collaborate on event planning",
+    "acceptance_criteria": [
+      "Team members can be invited via email",
+      "Roles: Admin, Editor, Viewer, Check-in Staff",
+      "Permissions are granular per feature module",
+      "Team activity log tracks all actions",
+      "Team members can be removed or have roles changed"
+    ],
+    "priority": "P1",
+    "effort": "M",
+    "event_types": ["all"],
+    "dependencies": ["US-001"]
+  },
+  {
+    "id": "US-025",
+    "title": "Recurring Events",
+    "as_a": "Event Organizer",
+    "i_want_to": "Create recurring event series",
+    "so_that": "I don't have to recreate similar events",
+    "acceptance_criteria": [
+      "Recurrence patterns: daily, weekly, monthly, yearly, custom",
+      "Guest list can be copied from previous event",
+      "Settings and theme are inherited from template",
+      "Each occurrence has unique URL and QR codes",
+      "Series can be cancelled or edited individually"
+    ],
+    "priority": "P2",
+    "effort": "L",
+    "event_types": ["Meetup", "Conference"],
+    "dependencies": ["US-002"]
+  }
+]

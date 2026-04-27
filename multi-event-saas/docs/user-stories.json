@@ -1,0 +1,452 @@
+[
+  {
+    "id": "US-001",
+    "title": "Create Organization with Subdomain",
+    "persona": "Professional Event Planner",
+    "priority": "P0",
+    "description": "As an event planner, I want to create an organization with a custom subdomain so that I can manage multiple events under my brand.",
+    "acceptance_criteria": [
+      "User can register with email/password or OAuth (Google, Microsoft)",
+      "Organization name is validated (3-50 chars, alphanumeric + spaces)",
+      "Subdomain is checked for availability in real-time",
+      "Subdomain format: [subdomain].eventflow.pro",
+      "Owner role is automatically assigned to creator",
+      "Welcome email is sent with setup instructions"
+    ],
+    "effort_estimate": "3 days",
+    "dependencies": [],
+    "event_types": ["all"]
+  },
+  {
+    "id": "US-002",
+    "title": "Create Event with Type Selection",
+    "persona": "Individual Host",
+    "priority": "P0",
+    "description": "As a host, I want to create a new event and select its type (Wedding, Birthday, Conference, Meetup, Commemoration, Custom) so that appropriate templates and features are applied.",
+    "acceptance_criteria": [
+      "Event creation wizard with step-by-step flow",
+      "Event type selector with preview thumbnails",
+      "Required fields: name, date, timezone, location/type (physical/virtual/hybrid)",
+      "Default theme is applied based on event type",
+      "Event URL is generated: [org-subdomain].eventflow.pro/e/[event-slug]",
+      "Draft mode enabled until first publish"
+    ],
+    "effort_estimate": "4 days",
+    "dependencies": ["US-001"],
+    "event_types": ["all"]
+  },
+  {
+    "id": "US-003",
+    "title": "Dynamic Theme Application",
+    "persona": "Individual Host",
+    "priority": "P0",
+    "description": "As a host, I want the event page to automatically apply a theme based on event type so that it looks professional without manual design work.",
+    "acceptance_criteria": [
+      "Theme JSON is loaded based on event.type field",
+      "CSS variables are injected dynamically into page",
+      "Colors, fonts, animations, patterns change per theme",
+      "Preview mode shows theme before publishing",
+      "Custom color override available (Pro+ tier)",
+      "Mobile app reflects same theme in real-time"
+    ],
+    "effort_estimate": "5 days",
+    "dependencies": ["US-002"],
+    "event_types": ["all"]
+  },
+  {
+    "id": "US-004",
+    "title": "Bulk Guest Import",
+    "persona": "Professional Event Planner",
+    "priority": "P0",
+    "description": "As an organizer, I want to import guests from CSV/Excel so that I can quickly add hundreds or thousands of attendees.",
+    "acceptance_criteria": [
+      "CSV template download with required columns (name, email, phone)",
+      "Drag-and-drop file upload zone",
+      "Column mapping interface for custom formats",
+      "Validation report showing errors/duplicates",
+      "Progress bar for large imports (10K+ rows)",
+      "Background job processing with email notification on completion"
+    ],
+    "effort_estimate": "4 days",
+    "dependencies": ["US-002"],
+    "event_types": ["all"]
+  },
+  {
+    "id": "US-005",
+    "title": "QR Code Generation per Guest",
+    "persona": "Corporate Event Coordinator",
+    "priority": "P0",
+    "description": "As an organizer, I want each guest to have a unique QR code so that check-in is fast, secure, and trackable.",
+    "acceptance_criteria": [
+      "QR code generated on guest creation (encrypted UUID)",
+      "QR includes time-based token for anti-fraud",
+      "Download individual QR as PNG/PDF",
+      "Bulk download all QRs as ZIP with printable sheets",
+      "QR regeneration option if compromised",
+      "Offline validation capability (cached public keys)"
+    ],
+    "effort_estimate": "3 days",
+    "dependencies": ["US-004"],
+    "event_types": ["all"]
+  },
+  {
+    "id": "US-006",
+    "title": "RSVP Form Customization",
+    "persona": "Individual Host",
+    "priority": "P0",
+    "description": "As a host, I want to customize the RSVP form with questions specific to my event so that I collect relevant information from guests.",
+    "acceptance_criteria": [
+      "Default fields: attendance status, plus-ones, dietary restrictions",
+      "Custom question builder (text, multiple choice, yes/no)",
+      "Required vs optional field toggles",
+      "RSVP deadline setting with auto-close",
+      "Form preview before sending to guests",
+      "Multi-language form support (i18n)"
+    ],
+    "effort_estimate": "4 days",
+    "dependencies": ["US-002"],
+    "event_types": ["all"]
+  },
+  {
+    "id": "US-007",
+    "title": "Automated RSVP Reminders",
+    "persona": "Professional Event Planner",
+    "priority": "P1",
+    "description": "As an organizer, I want automated reminders sent to non-responders so that I maximize RSVP rates without manual follow-up.",
+    "acceptance_criteria": [
+      "Schedule reminders (e.g., 7 days, 3 days, 1 day before deadline)",
+      "Channel selection: Email (free), SMS/WhatsApp (credits required)",
+      "Personalized message templates per event type",
+      "Unsubscribe link in all messages",
+      "Reminder analytics (open rate, click-through, response rate)",
+      "Manual trigger option for one-off reminders"
+    ],
+    "effort_estimate": "3 days",
+    "dependencies": ["US-006"],
+    "event_types": ["all"]
+  },
+  {
+    "id": "US-008",
+    "title": "Waitlist Management with Auto-Promotion",
+    "persona": "Venue Manager",
+    "priority": "P1",
+    "description": "As a venue manager, I want an automated waitlist so that when capacity is reached, interested guests are queued and promoted when spots open.",
+    "acceptance_criteria": [
+      "Capacity limit setting per event",
+      "Automatic waitlist enrollment when capacity reached",
+      "Priority rules (first-come-first-served, VIP priority)",
+      "Auto-promotion when RSVP cancellation occurs",
+      "Email notification to promoted guests with 48-hour response window",
+      "Waitlist position visible to guests on landing page"
+    ],
+    "effort_estimate": "4 days",
+    "dependencies": ["US-006"],
+    "event_types": ["Conference", "Meetup", "Birthday"]
+  },
+  {
+    "id": "US-009",
+    "title": "Mobile QR Check-In Scanner",
+    "persona": "Corporate Event Coordinator",
+    "priority": "P0",
+    "description": "As a check-in staff member, I want to scan guest QR codes with my mobile device so that I can quickly validate attendance even without internet.",
+    "acceptance_criteria": [
+      "Camera-based QR scanner using Expo API",
+      "Offline mode with cached guest list and validation keys",
+      "Real-time sync when connection restored",
+      "Visual/audio feedback on scan success/failure",
+      "Check-in history viewable on device",
+      "Multi-device support with conflict resolution"
+    ],
+    "effort_estimate": "5 days",
+    "dependencies": ["US-005"],
+    "event_types": ["all"]
+  },
+  {
+    "id": "US-010",
+    "title": "Stripe Payment Integration for Ticket Sales",
+    "persona": "Professional Event Planner",
+    "priority": "P0",
+    "description": "As an organizer, I want to sell tickets and accept payments via Stripe so that I can monetize my events seamlessly.",
+    "acceptance_criteria": [
+      "Stripe Connect onboarding flow for organizations",
+      "Ticket tier creation (Early Bird, General, VIP)",
+      "Platform fee calculation and split payment",
+      "Secure checkout with Stripe Elements",
+      "Payment confirmation email with ticket attachment",
+      "Refund initiation from dashboard (partial/full)"
+    ],
+    "effort_estimate": "6 days",
+    "dependencies": ["US-001", "US-002"],
+    "event_types": ["Conference", "Meetup", "Custom"]
+  },
+  {
+    "id": "US-011",
+    "title": "Real-Time Attendance Dashboard",
+    "persona": "Venue Manager",
+    "priority": "P1",
+    "description": "As a venue manager, I want to see live attendance metrics during my event so that I can make operational decisions in real-time.",
+    "acceptance_criteria": [
+      "WebSocket-powered live updates (<1s latency)",
+      "Metrics: checked-in count, no-show count, expected arrivals",
+      "Attendance heatmap by hour",
+      "Device status monitoring (online/offline scanners)",
+      "Export current data to CSV",
+      "Mobile-responsive dashboard"
+    ],
+    "effort_estimate": "4 days",
+    "dependencies": ["US-009"],
+    "event_types": ["all"]
+  },
+  {
+    "id": "US-012",
+    "title": "Event Chat Rooms",
+    "persona": "Individual Host",
+    "priority": "P1",
+    "description": "As a host, I want guests to communicate in event-specific chat rooms so that they can network and coordinate.",
+    "acceptance_criteria": [
+      "Socket.io-based real-time messaging",
+      "Room types: General, Topic-based, VIP-only",
+      "Message moderation tools (delete, ban user)",
+      "File/image sharing with size limits",
+      "Chat history persistence (30 days free, unlimited Pro+)",
+      "Profanity filter with AI enhancement"
+    ],
+    "effort_estimate": "5 days",
+    "dependencies": ["US-002"],
+    "event_types": ["Conference", "Meetup", "Wedding"]
+  },
+  {
+    "id": "US-013",
+    "title": "Photo Gallery with Moderation",
+    "persona": "Individual Host",
+    "priority": "P1",
+    "description": "As a host, I want guests to upload photos to a shared gallery so that everyone can access event memories.",
+    "acceptance_criteria": [
+      "Uploadthing integration for secure file uploads",
+      "Cloudinary CDN for image optimization and delivery",
+      "Moderation queue (approve/reject before publishing)",
+      "Guest tagging with facial recognition (opt-in)",
+      "Download permissions (owner-only, all guests, public)",
+      "Slideshow mode for venue displays"
+    ],
+    "effort_estimate": "5 days",
+    "dependencies": ["US-002"],
+    "event_types": ["Wedding", "Birthday", "Commemoration"]
+  },
+  {
+    "id": "US-014",
+    "title": "Analytics Dashboard with Reports",
+    "persona": "Professional Event Planner",
+    "priority": "P1",
+    "description": "As an event planner, I want comprehensive analytics so that I can measure event success and report to clients.",
+    "acceptance_criteria": [
+      "RSVP funnel: invited → opened → responded → attended",
+      "Demographic breakdown (age, location, role)",
+      "Engagement metrics: chat messages, photo uploads, session attendance",
+      "Revenue tracking (ticket sales, refunds, net revenue)",
+      "Exportable reports: PDF (client-ready), CSV (raw data)",
+      "Comparison across multiple events"
+    ],
+    "effort_estimate": "6 days",
+    "dependencies": ["US-011"],
+    "event_types": ["all"]
+  },
+  {
+    "id": "US-015",
+    "title": "Team Collaboration & Permissions",
+    "persona": "Professional Event Planner",
+    "priority": "P1",
+    "description": "As a planning agency, I want to invite team members with specific roles so that we can collaborate securely.",
+    "acceptance_criteria": [
+      "Invite by email with role assignment (Admin, Organizer, Viewer)",
+      "Granular permissions matrix per feature",
+      "Activity audit log (who did what, when)",
+      "Team member removal with data reassignment",
+      "SSO integration (Enterprise tier)",
+      "Notification preferences per user"
+    ],
+    "effort_estimate": "4 days",
+    "dependencies": ["US-001"],
+    "event_types": ["all"]
+  },
+  {
+    "id": "US-016",
+    "title": "Multi-Language Support (i18n)",
+    "persona": "Corporate Event Coordinator",
+    "priority": "P1",
+    "description": "As an international conference organizer, I want the platform to support multiple languages so that global attendees have a localized experience.",
+    "acceptance_criteria": [
+      "i18next integration with language detection",
+      "Supported languages: EN, ES, FR, DE, JA, PT (MVP)",
+      "Language switcher in UI (guest and organizer views)",
+      "Organizer can override default translations",
+      "RTL language support (Arabic, Hebrew - future)",
+      "Localized date/time/currency formats"
+    ],
+    "effort_estimate": "5 days",
+    "dependencies": ["US-002"],
+    "event_types": ["all"]
+  },
+  {
+    "id": "US-017",
+    "title": "Subscription Management & Billing",
+    "persona": "Professional Event Planner",
+    "priority": "P0",
+    "description": "As an organization owner, I want to manage my subscription tier and billing so that I can upgrade/downgrade as needed.",
+    "acceptance_criteria": [
+      "Stripe Customer Portal integration",
+      "Plan comparison view (Free vs Pro vs Enterprise)",
+      "Upgrade/downgrade with prorated billing",
+      "Invoice history download (PDF)",
+      "Payment method management",
+      "Cancellation with end-of-period access"
+    ],
+    "effort_estimate": "3 days",
+    "dependencies": ["US-001"],
+    "event_types": ["all"]
+  },
+  {
+    "id": "US-018",
+    "title": "Seating Chart Designer",
+    "persona": "Individual Host",
+    "priority": "P2",
+    "description": "As a wedding host, I want to design a seating chart so that I can organize guests at tables optimally.",
+    "acceptance_criteria": [
+      "Drag-and-drop table layout builder",
+      "Table capacity settings",
+      "Guest assignment with search/filter",
+      "Conflict detection (e.g., divorced parents at same table)",
+      "Print/export as PDF for venue",
+      "Collaborative editing (multiple planners)"
+    ],
+    "effort_estimate": "6 days",
+    "dependencies": ["US-004"],
+    "event_types": ["Wedding", "Conference", "Birthday"]
+  },
+  {
+    "id": "US-019",
+    "title": "Recurring Event Scheduling",
+    "persona": "Venue Manager",
+    "priority": "P2",
+    "description": "As a meetup organizer, I want to schedule recurring events so that I don't have to recreate similar events manually.",
+    "acceptance_criteria": [
+      "Recurrence patterns: weekly, bi-weekly, monthly, custom",
+      "End conditions: after X occurrences, on specific date",
+      "Guest list carry-over option",
+      "Individual occurrence customization (date, capacity)",
+      "RSVP per occurrence or series-wide",
+      "Calendar sync (iCal, Google Calendar)"
+    ],
+    "effort_estimate": "5 days",
+    "dependencies": ["US-002"],
+    "event_types": ["Meetup", "Conference"]
+  },
+  {
+    "id": "US-020",
+    "title": "Push Notifications (Mobile)",
+    "persona": "Individual Host",
+    "priority": "P1",
+    "description": "As a guest, I want to receive push notifications about event updates so that I stay informed in real-time.",
+    "acceptance_criteria": [
+      "Expo Push Notifications integration",
+      "Notification types: RSVP reminder, event update, chat mention",
+      "User preference controls (opt-in/out per type)",
+      "Deep linking to relevant app screen",
+      "Scheduled notifications (timezone-aware)",
+      "Analytics: delivery rate, open rate"
+    ],
+    "effort_estimate": "3 days",
+    "dependencies": ["US-009"],
+    "event_types": ["all"]
+  },
+  {
+    "id": "US-021",
+    "title": "Self Check-In Kiosk Mode",
+    "persona": "Corporate Event Coordinator",
+    "priority": "P1",
+    "description": "As an organizer, I want to set up self-service check-in kiosks so that large crowds can check in without staff bottlenecks.",
+    "acceptance_criteria": [
+      "Tablet-optimized kiosk UI (full-screen mode)",
+      "QR scan or manual code entry",
+      "Badge printing integration (thermal printers)",
+      "Session timeout for security",
+      "Remote monitoring from admin dashboard",
+      "Offline mode with local caching"
+    ],
+    "effort_estimate": "4 days",
+    "dependencies": ["US-009"],
+    "event_types": ["Conference", "Meetup"]
+  },
+  {
+    "id": "US-022",
+    "title": "API Access for Enterprise",
+    "persona": "Corporate Event Coordinator",
+    "priority": "P1",
+    "description": "As an enterprise client, I want API access so that I can integrate EventFlow with our internal systems.",
+    "acceptance_criteria": [
+      "RESTful API with OpenAPI/Swagger documentation",
+      "API key generation and rotation",
+      "Rate limiting (10K requests/hour default)",
+      "Webhook subscriptions for events (guest.created, rsvp.updated)",
+      "SDKs for Node.js, Python, Ruby",
+      "Sandbox environment for testing"
+    ],
+    "effort_estimate": "7 days",
+    "dependencies": ["US-001"],
+    "event_types": ["all"]
+  },
+  {
+    "id": "US-023",
+    "title": "White-Label Customization",
+    "persona": "Professional Event Planner",
+    "priority": "P1",
+    "description": "As an agency, I want white-label branding so that my clients see my brand instead of EventFlow.",
+    "acceptance_criteria": [
+      "Custom domain mapping (events.myagency.com)",
+      "Logo replacement throughout platform",
+      "Color scheme override (primary, secondary, accents)",
+      "Email template customization",
+      "Favicon and meta tags customization",
+      "Remove 'Powered by EventFlow' footer"
+    ],
+    "effort_estimate": "5 days",
+    "dependencies": ["US-001"],
+    "event_types": ["all"]
+  },
+  {
+    "id": "US-024",
+    "title": "AI Photo Tagging",
+    "persona": "Individual Host",
+    "priority": "P2",
+    "description": "As a wedding host, I want AI to automatically tag people in photos so that guests can find themselves easily.",
+    "acceptance_criteria": [
+      "Integration with AWS Rekognition or Google Vision",
+      "Guest opt-in for facial recognition",
+      "Tag suggestion with manual approval",
+      "Privacy controls (blur faces for non-opted-in)",
+      "Batch processing for uploaded photos",
+      "Search by tagged person name"
+    ],
+    "effort_estimate": "6 days",
+    "dependencies": ["US-013"],
+    "event_types": ["Wedding", "Birthday", "Commemoration"]
+  },
+  {
+    "id": "US-025",
+    "title": "Donation Collection for Commemorations",
+    "persona": "Individual Host",
+    "priority": "P2",
+    "description": "As a memorial event organizer, I want to collect donations in lieu of gifts so that guests can contribute to meaningful causes.",
+    "acceptance_criteria": [
+      "Integration with Stripe for one-time/recurring donations",
+      "Multiple charity options with descriptions",
+      "Donation tiers with suggested amounts",
+      "Tribute wall showing donors (opt-in)",
+      "Tax receipt generation",
+      "Direct transfer to charities (no platform fee)"
+    ],
+    "effort_estimate": "4 days",
+    "dependencies": ["US-010"],
+    "event_types": ["Commemoration"]
+  }
+]
